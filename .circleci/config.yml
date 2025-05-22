@@ -1,77 +1,15 @@
 version: 2.1
-
-executors:
-  android-executor:
+jobs:
+  build:
     docker:
       - image: cimg/base:stable
-    resource_class: large
-
-jobs:
-  build_pbrp:
-    executor: android-executor
     steps:
       - checkout
-
       - run:
-          name: Set Git Identity
-          command: |
-            git config --global user.email "ramazankurus4380@gmail.com"
-            git config --global user.name "ramoogus"
-
-      - run:
-          name: Install Dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y bc bison build-essential curl flex git gnupg gperf \
-              libssl-dev libncurses-dev libxml2-utils lzop pngcrush rsync schedtool \
-              squashfs-tools xsltproc zip unzip python3 python3-pip openjdk-11-jdk
-
-      - run:
-          name: Install Repo Tool
-          command: |
-            sudo curl https://storage.googleapis.com/git-repo-downloads/repo -o /usr/local/bin/repo
-            sudo chmod +x /usr/local/bin/repo
-
-      - run:
-          name: Initialize PBRP Repo
-          command: |
-            mkdir pbrp
-            cd pbrp
-            repo init -u https://github.com/PitchBlackRecoveryProject/manifest_pb.git -b android-14.0
-
-      - run:
-          name: Sync PBRP Source (faster, current branch only)
-          command: |
-            cd pbrp
-            repo sync -c --force-sync --no-tags --no-clone-bundle -j$(nproc --all)
-
-      - run:
-          name: Clean .repo Metadata
-          command: |
-            rm -rf pbrp/.repo/projects
-            rm -rf pbrp/.repo/manifests.git
-
-      - run:
-          name: Clone Device Tree
-          command: |
-            mkdir -p pbrp/device/samsung
-            cd pbrp/device/samsung
-            git clone --single-branch --branch gta9pwifixx-user-11-RP1A.200720.012-X210XXU2CXE6-release-keys https://github.com/twrpdtgen/android_device_samsung_gta9pwifi.git gta9pwifi
-
-      - run:
-          name: Build Recovery
-          command: |
-            cd pbrp
-            source build/envsetup.sh
-            lunch omni_gta9pwifi-eng
-            mka recoveryimage -j$(nproc --all)
-
-      - store_artifacts:
-          path: pbrp/out/target/product/gta9pwifi/recovery.img
-          destination: recovery.img
-
+          name: Repo Sync with Optimized Flags
+          command: repo sync --optimized-fetch --prune -j2
 workflows:
   version: 2
-  build_and_release:
+  build-workflow:
     jobs:
-      - build_pbrp
+      - build
