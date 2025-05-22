@@ -6,8 +6,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Repo Sync with Optimized Flags
-          command: repo sync --optimized-fetch --prune -j2
+          name: Repo Sync with Custom Flags
+          command: repo sync -c --force-sync --no-tags --no-clone-bundle --optimized-fetch --prune -j2 --fail-fast
 workflows:
   version: 2
   build-workflow:
