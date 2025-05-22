@@ -63,6 +63,11 @@ jobs:
           name: Build Recovery
           command: |
             cd pbrp
+            # Check if vendor/omni/config/common.mk exists, and print a clear message if missing
+            if [ ! -f vendor/omni/config/common.mk ]; then
+              echo "ERROR: vendor/omni/config/common.mk is missing. Please ensure the vendor/omni repository is included in your manifest and synced."
+              exit 1
+            fi
             source build/envsetup.sh
             lunch omni_gta9pwifi-eng
             mka recoveryimage -j$(nproc --all)
